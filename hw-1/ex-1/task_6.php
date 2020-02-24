@@ -3,9 +3,9 @@
 $size = 10;
 
 echo "<table border='1' style='border-collapse: collapse;'>";
-    for ($row = 1; $row < $size; $row++) {
+    for ($row = 1; $row <= $size; $row++) {
         echo "<tr>";
-            for ($col = 1; $col < $size; $col++) {
+            for ($col = 1; $col <= $size; $col++) {
 
                 $value = $row * $col;
 

@@ -73,3 +73,110 @@ function task1()
         ";
     }
 }
+
+function task2()
+{
+    $arr = [
+        'user' => [
+            'firstName' => 'Иван',
+            'lastName' => 'Иванов',
+            'age' => 25,
+            'sex' => 'male'
+        ],
+        'order' => [
+            'id' => '39CXV56',
+            'date' => '28.02.2020 00:00:00',
+            'products' => [
+                'name' => 'DOBBY Selfie Drone',
+                'art' => 'DB16-100B',
+                'group' => 'Квадрокоптеры',
+                'price' => 500,
+                'currency' => 'USD'
+            ]
+        ]
+    ];
+
+    file_put_contents('output.json', json_encode($arr, JSON_UNESCAPED_UNICODE));
+
+    $file = json_decode(file_get_contents('output.json'), true);
+
+    if ($file && rand(0, 1)) {
+        $file['user']['firstName'] = 'Николай';
+        $file['user']['lastName'] = 'Николаев';
+        $file['user']['age'] = 38;
+    }
+
+    file_put_contents('output2.json', json_encode($file, JSON_UNESCAPED_UNICODE));
+
+    $output1 = json_decode(file_get_contents('output.json'), true);
+    $output2 = json_decode(file_get_contents('output2.json'), true);
+
+    // output diff
+    diff_array($output1, $output2);
+}
+
+function diff_array($arr1, $arr2)
+{
+    forEach($arr1 as $key => $value) {
+        if (is_array($arr1[$key]) && is_array($arr2[$key])) {
+            diff_array($arr1[$key], $arr2[$key]);
+            continue;
+        }
+        if($arr1[$key] !== $arr2[$key]) {
+            echo $arr1[$key] . " !== " .$arr2[$key] ."<br/>";
+        }
+    }
+}
+
+function task3()
+{
+    $arr = [];
+
+    for ($i = 0; $i < 50; $i++) {
+        $arr[] = rand(1, 100);
+    }
+
+    $file = fopen('numbers.csv', 'w');
+    fputcsv($file, $arr, ';');
+    fclose($file);
+
+    // Open file
+    $numbers = fopen('numbers.csv', 'r');
+    $sum = 0;
+
+    while ($num = fgetcsv($numbers, 1000, ';')) {
+        foreach($num as $val) {
+            if ($val % 2 === 0) {
+                $sum += $val;
+            }
+        }
+    }
+    fclose($numbers);
+
+    echo "Сумма четных чисел = $sum";
+}
+
+function task4()
+{
+    $res = file_get_contents("https://en.wikipedia.org/w/api.php?action=query&titles=Main%20Page&prop=revisions&rvprop=content&format=json");
+    $res = json_decode($res, true, 512, JSON_HEX_TAG);
+
+    echo "title = ". findField($res, 'title') ."<br/>";
+    echo "pageid = ". findField($res, 'pageid') ."<br/>";
+}
+
+function findField ($arr, $field)
+{
+    foreach($arr as $key => $value) {
+        if($key === $field) {
+            return $arr[$key];
+        }
+        if(is_array($arr[$key])) {
+            $res = findField($arr[$key], $field);
+            if($res) {
+                return $res;
+            }
+        }
+    }
+    return false;
+}

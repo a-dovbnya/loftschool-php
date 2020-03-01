@@ -1,6 +1,6 @@
 <?php
 
-include './lib.php'
+include './lib.php';
 
 const TEST_CONSTANTA = 'asd';
 $user_name = 'Igor';

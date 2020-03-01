@@ -159,7 +159,7 @@ function task3()
 function task4()
 {
     $res = file_get_contents("https://en.wikipedia.org/w/api.php?action=query&titles=Main%20Page&prop=revisions&rvprop=content&format=json");
-    $res = json_decode($res, true, 512, JSON_HEX_TAG);
+    $res = json_decode($res, true);
 
     echo "title = ". findField($res, 'title') ."<br/>";
     echo "pageid = ". findField($res, 'pageid') ."<br/>";

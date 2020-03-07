@@ -3,14 +3,16 @@
 /**
  * Интерфейс с тарифом
  */
-interface TariffProto {
+interface TariffProto
+{
     public function calculate($distance, $time);
 }
 
 /**
  * Абстрактный класс с тарифом
  */
-abstract class Tariff implements TariffProto {
+abstract class Tariff implements TariffProto
+{
 
     const MIN_AGE = 18;
     const MAX_AGE = 65;
@@ -54,8 +56,10 @@ abstract class Tariff implements TariffProto {
 /**
  * Использование gps
  */
-trait Gps {
-    public function useGps($time) {
+trait Gps
+{
+    public function useGps($time)
+    {
         if ($time < 60) {
             throw new Exception("Вы не можете заказать gps менее чем на 1 час");
         }
@@ -67,8 +71,10 @@ trait Gps {
 /**
  * Дополнительный водитель
  */
-trait AddedDriver {
-    public function useAddDriver() {
+trait AddedDriver
+{
+    public function useAddDriver()
+    {
         return 100;
     }
 }
@@ -76,7 +82,8 @@ trait AddedDriver {
 /**
  * Тариф базовый
  */
-class BaseTariff extends Tariff {
+class BaseTariff extends Tariff
+{
     use Gps;
 
     const KM_PRICE = 10;
@@ -106,7 +113,8 @@ class BaseTariff extends Tariff {
 /**
  * Тариф почасовой
  */
-class HourlyTariff extends Tariff {
+class HourlyTariff extends Tariff
+{
     use Gps;
     use AddedDriver;
 
@@ -141,7 +149,8 @@ class HourlyTariff extends Tariff {
 /**
  * Тариф суточный
  */
-class DialyTariff extends Tariff {
+class DialyTariff extends Tariff
+{
     use Gps;
     use AddedDriver;
 
@@ -191,7 +200,8 @@ class DialyTariff extends Tariff {
 /**
  * Тариф студенческий
  */
-class StudentTariff extends Tariff {
+class StudentTariff extends Tariff
+{
     use Gps;
 
     const KM_PRICE = 4;

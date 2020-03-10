@@ -3,23 +3,55 @@
 require "./classes.php";
 
 try {
+    echo "
+    ======== Тариф базовый ======== <br/>
+    Возраст водителя: 25лет;<br/>
+    Дистанция: 12км;<br/>
+    Время: 70мин.<br/>
+    Дополнительные услуги: нет;<br/>
+    Результат расчета:
+    ";
+    
     $base = new BaseTariff(25);
-    echo $base->calculate(12, 70);
+    echo $base->calculate(12, 70) ."руб.";
 
-    echo "<br>";
+    echo "
+    <br><br>
+    ======== Тариф часовой ======== <br/>
+    Возраст водителя: 35лет;<br/>
+    Время: 121мин.<br/>
+    Дополнительные услуги: нет;<br/>
+    Результат расчета:
+    ";
 
     $hourly = new HourlyTariff(35);
-    echo $hourly->calculate(121);
+    echo $hourly->calculate(121) ."руб.";
 
-    echo "<br>";
+    echo "
+    <br><br>
+    ======== Тариф суточный ======== <br/>
+    Возраст водителя: 21год;<br/>
+    Дистанция: 5км;<br/>
+    Время: 24.5часов.<br/>
+    Дополнительные услуги: нет;<br/>
+    Результат расчета:
+    ";
 
     $dayly = new DialyTariff(21);
-    echo $dayly->calculate(5, 24.5);
+    echo $dayly->calculate(5, 24.5) ."руб.";
 
-    echo "<br>";
+    echo "
+    <br><br>
+    ======== Тариф студенческий ======== <br/>
+    Возраст водителя: 20лет;<br/>
+    Дистанция: 5км;<br/>
+    Время: 62мин.<br/>
+    Дополнительные услуги: gps;<br/>
+    Результат расчета:
+    ";
 
     $student = new StudentTariff(20);
-    echo $student->calculate(5, 62, true);
+    echo $student->calculate(5, 62, true) ."руб.";
 } catch (Exception $ex) {
     echo $ex->getMessage();
 }

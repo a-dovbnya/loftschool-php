@@ -9,10 +9,37 @@ interface TariffProto
 }
 
 /**
+ * Использование gps
+ */
+trait Gps
+{
+    public function useGps($time)
+    {
+        if ($time < 60) {
+            throw new Exception("Вы не можете заказать gps менее чем на 1 час");
+        }
+
+        return $time*15/60;
+    }
+}
+
+/**
+ * Дополнительный водитель
+ */
+trait AddedDriver
+{
+    public function useAddDriver()
+    {
+        return 100;
+    }
+}
+
+/**
  * Абстрактный класс с тарифом
  */
 abstract class Tariff implements TariffProto
 {
+    use Gps;
 
     const MIN_AGE = 18;
     const MAX_AGE = 65;
@@ -20,6 +47,17 @@ abstract class Tariff implements TariffProto
 
     public $driverAge;
     public $ageKoeff;
+    public $distancePrice;
+    public $timePrice;
+
+    public function getDistancePrice()
+    {
+        return $this->distancePrice ?? 0;
+    }
+    public function getTimePrice()
+    {
+        return $this->timePrice ?? 0;
+    }
 
     public function __construct(int $age)
     {
@@ -50,53 +88,9 @@ abstract class Tariff implements TariffProto
         }
     }
 
-    abstract public function calculate($distance, $time);
-}
-
-/**
- * Использование gps
- */
-trait Gps
-{
-    public function useGps($time)
+    public function innerCalc($distance, $time, $gps = false)
     {
-        if ($time < 60) {
-            throw new Exception("Вы не можете заказать gps менее чем на 1 час");
-        }
-
-        return $time*15/60;
-    }
-}
-
-/**
- * Дополнительный водитель
- */
-trait AddedDriver
-{
-    public function useAddDriver()
-    {
-        return 100;
-    }
-}
-
-/**
- * Тариф базовый
- */
-class BaseTariff extends Tariff
-{
-    use Gps;
-
-    const KM_PRICE = 10;
-    const MINUTES_PRICE = 3;
-
-    public function __construct(int $age)
-    {
-        parent::__construct($age);
-    }
-
-    public function calculate($distance, $time, $gps = false)
-    {
-        $price = ($distance*self::KM_PRICE + $time*self::MINUTES_PRICE) * $this->ageKoeff;
+        $price = ($distance*$this->getDistancePrice() + $time*$this->getTimePrice()) * $this->ageKoeff;
 
         if ($gps) {
             try {
@@ -108,6 +102,27 @@ class BaseTariff extends Tariff
 
         return $price;
     }
+
+    abstract function calculate($distance, $time, $gps = false);
+}
+
+/**
+ * Тариф базовый
+ */
+class BaseTariff extends Tariff
+{
+
+    public function __construct(int $age)
+    {
+        parent::__construct($age);
+        $this->distancePrice = 10;
+        $this->timePrice = 3;
+    }
+
+    public function calculate($distance, $time, $gps = false)
+    {
+        return $this->innerCalc($distance, $time, $gps);
+    }
 }
 
 /**
@@ -115,28 +130,18 @@ class BaseTariff extends Tariff
  */
 class HourlyTariff extends Tariff
 {
-    use Gps;
     use AddedDriver;
-
-    const HOUR_PRICE = 200;
 
     public function __construct(int $age)
     {
         parent::__construct($age);
+        $this->timePrice = 200;
     }
 
     public function calculate($time, $gps = false, $addedDriver = false)
     {
         $hours = ceil($time / 60);
-        $price = self::HOUR_PRICE * $hours * $this->ageKoeff;
-
-        if ($gps) {
-            try {
-                $price += $this->useGps($time);
-            } catch (Exception $ex) {
-                echo $ex->getMessage();
-            }
-        }
+        $price = $this->innerCalc(0, $hours, $gps);
 
         if ($addedDriver) {
             $price += $this->useAddDriver();
@@ -151,30 +156,19 @@ class HourlyTariff extends Tariff
  */
 class DialyTariff extends Tariff
 {
-    use Gps;
     use AddedDriver;
-
-    const KM_PRICE = 1;
-    const DAY_PRICE = 1000;
 
     public function __construct(int $age)
     {
         parent::__construct($age);
+        $this->distancePrice = 1;
+        $this->timePrice = 1000;
     }
 
     public function calculate($distance, $time, $gps = false, $addedDriver = false)
     {
         $days = $this->getDays($time);
-
-        $price = (self::KM_PRICE * $distance + self::DAY_PRICE *  $days) * $this->ageKoeff;
-
-        if ($gps) {
-            try {
-                $price += $this->useGps($time);
-            } catch (Exception $ex) {
-                echo $ex->getMessage();
-            }
-        }
+        $price = $this->innerCalc($distance, $days, $gps);
 
         if ($addedDriver) {
             $price += $this->useAddDriver();
@@ -202,11 +196,6 @@ class DialyTariff extends Tariff
  */
 class StudentTariff extends Tariff
 {
-    use Gps;
-
-    const KM_PRICE = 4;
-    const DAY_PRICE = 1;
-
     public function __construct(int $age)
     {
         if($age > 25) {
@@ -214,20 +203,12 @@ class StudentTariff extends Tariff
         }
 
         parent::__construct($age);
+        $this->distancePrice = 4;
+        $this->timePrice = 1;
     }
 
     public function calculate($distance, $time, $gps = false)
     {
-        $price = (self::KM_PRICE * $distance + self::DAY_PRICE * $time) * $this->ageKoeff;
-
-        if ($gps) {
-            try {
-                $price += $this->useGps($time);
-            } catch (Exception $ex) {
-                echo $ex->getMessage();
-            }
-        }
-
-        return $price;
+        return $this->innerCalc($distance, $time, $gps);
     }
 }
